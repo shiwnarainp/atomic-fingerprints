@@ -2,22 +2,51 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
 <title>Atomic Fingerprints</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
-/* Layout: a single-column spectroscopy bench. Header with mode + progress, tabbed modules, instrument panels on near-black so emitted light reads true. Deliberately single (dark) theme. */
+[hidden]{display:none!important}
+/* Layout: a single-column spectroscopy bench. Header with mode + progress, tabbed modules, instrument panels on near-black so emitted light reads true.
+   Themes: dark (default) and light page surfaces. Instrument "stages" (spectroscope fields, discharge tube, Bohr scene) stay dark in both themes,
+   because emitted light only reads true against a dark field; the --scope- and --stage- tokens below are shared by both themes. */
 :root{
   --bg:#0a0d12; --panel:#111720; --panel2:#18202b; --line:#273243; --ink:#e7edf4; --muted:#98a6b8;
   --accent:#8fc4e3; --accent-ink:#0a0d12; --good:#72d6a0; --bad:#ff8f80; --warn:#f2c46b;
+  --shadow:rgba(0,0,0,.5);
+  /* spectroscope canvas: dark viewing field, axis strip adapts to the page */
+  --scope-bg:#000; --scope-label:#e7edf4; --scope-overlay:rgba(255,255,255,.95); --scope-dim:0,0,0;
+  --scope-axis-bg:#0d1117; --scope-axis-line:#5b6778; --scope-axis-ink:#aab6c5; --stage-edge:transparent;
+  /* dark instrument stages (same in both themes) */
+  --stage-bg:#05070a; --stage-panel:#18202b; --stage-line:#273243; --stage-orbit:#3a4759; --stage-ink:#e7edf4; --stage-muted:#98a6b8;
+  --stage-glass:#c9d3df; --stage-metal:#7d8796; --stage-nucleus:#ff8f80; --stage-nucleus-ink:#0a0d12; --stage-electron:#8fc4e3; --stage-invisible:#b8c2cf;
   --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
   --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
   color-scheme:dark;
 }
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#edf1f6; --panel:#f8fafc; --panel2:#e3e9f1; --line:#c3cddb; --ink:#13202f; --muted:#4c5b6f;
+    --accent:#1d6896; --accent-ink:#ffffff; --good:#17744a; --bad:#b3372a; --warn:#875700;
+    --shadow:rgba(19,32,47,.18);
+    --scope-axis-bg:#dde4ed; --scope-axis-line:#7f8da0; --scope-axis-ink:#33445a; --stage-edge:#c3cddb;
+    color-scheme:light;
+  }
+}
+:root[data-theme="light"]{
+  --bg:#edf1f6; --panel:#f8fafc; --panel2:#e3e9f1; --line:#c3cddb; --ink:#13202f; --muted:#4c5b6f;
+  --accent:#1d6896; --accent-ink:#ffffff; --good:#17744a; --bad:#b3372a; --warn:#875700;
+  --shadow:rgba(19,32,47,.18);
+  --scope-axis-bg:#dde4ed; --scope-axis-line:#7f8da0; --scope-axis-ink:#33445a; --stage-edge:#c3cddb;
+  color-scheme:light;
+}
+:root[data-theme="dark"]{color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55}
 .wrap{max-width:1120px;margin:0 auto;padding-block:20px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
@@ -66,7 +95,7 @@ textarea{width:100%;min-height:110px;resize:vertical}
 label.tog{display:inline-flex;gap:6px;align-items:center;font-size:.9rem;color:var(--muted);cursor:pointer}
 
 /* spectra */
-canvas.spec{display:block;width:100%;height:118px;border-radius:6px;background:#000}
+canvas.spec{display:block;width:100%;height:118px;border-radius:6px;background:var(--scope-bg);box-shadow:0 0 0 1px var(--stage-edge)}
 canvas.spec.sm{height:70px}
 .axis-cap{font-family:var(--mono);font-size:.72rem;color:var(--muted);text-align:right}
 .desc{font-size:.85rem;color:var(--muted)}
@@ -125,7 +154,7 @@ th{color:var(--muted);font-weight:500;font-size:.8rem;text-transform:uppercase;l
 
 /* vocab */
 .vocab{border-bottom:1px dotted var(--accent);cursor:help;color:inherit;background:none;border-top:0;border-left:0;border-right:0;padding:0;font:inherit}
-aside#vocabPanel{position:fixed;top:0;right:0;bottom:0;width:min(380px,100%);background:var(--panel);border-left:1px solid var(--line);padding:calc(env(safe-area-inset-top,0px) + 18px) max(18px,env(safe-area-inset-right,0px)) 18px 18px;overflow-y:auto;z-index:20;box-shadow:-10px 0 30px rgba(0,0,0,.5)}
+aside#vocabPanel{position:fixed;top:0;right:0;bottom:0;width:min(380px,100%);background:var(--panel);border-left:1px solid var(--line);padding:calc(env(safe-area-inset-top,0px) + 18px) max(18px,env(safe-area-inset-right,0px)) 18px 18px;overflow-y:auto;z-index:20;box-shadow:-10px 0 30px var(--shadow)}
 aside#vocabPanel dl{display:flex;flex-direction:column;gap:12px;margin:14px 0 0}
 aside#vocabPanel dt{font-family:var(--display);font-size:1.15rem;font-weight:600}
 aside#vocabPanel dd{margin:2px 0 0;color:var(--muted);font-size:.93rem}
@@ -137,8 +166,6 @@ details.goals ul{margin:6px 0 0;padding-left:20px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
-</head>
-<body>
 
 <div class="wrap">
 <header class="top">
@@ -152,7 +179,10 @@ details.goals ul{margin:6px 0 0;padding-left:20px}
       <div class="seg" role="group" aria-label="Support level">
         <button data-mode="guided">Guided</button><button data-mode="standard">Standard</button><button data-mode="challenge">Challenge</button>
       </div>
-      <button class="btn quiet" id="vocabBtn" aria-expanded="false" aria-controls="vocabPanel">Vocabulary</button>
+      <div class="row" style="gap:8px">
+        <button class="btn quiet" id="vocabBtn" aria-expanded="false" aria-controls="vocabPanel">Vocabulary</button>
+        <button class="btn quiet" id="themeBtn" type="button" aria-label="Color theme: Auto (follows system). Activate to switch to Light.">Theme: Auto</button>
+      </div>
     </div>
   </div>
   <div class="progress" id="progress" aria-label="Progress"></div>
@@ -229,17 +259,17 @@ details.goals ul{margin:6px 0 0;padding-left:20px}
       <div class="stack">
         <svg id="bohr" viewBox="0 0 640 360" role="img" aria-labelledby="bohrT">
           <title id="bohrT">Bohr model of a hydrogen atom with energy levels n = 1 to n = 6, and a spectroscope to the right</title>
-          <rect x="0" y="0" width="640" height="360" fill="#05070a" rx="10"/>
+          <rect x="0.5" y="0.5" width="639" height="359" fill="var(--stage-bg)" stroke="var(--stage-edge)" rx="10"/>
           <g id="orbits"></g>
-          <circle cx="180" cy="180" r="11" fill="#ff8f80"/>
-          <text x="180" y="184" text-anchor="middle" font-size="10" font-family="IBM Plex Mono, monospace" fill="#0a0d12" font-weight="600">p+</text>
-          <circle id="electron" cx="0" cy="0" r="7" fill="#8fc4e3" stroke="#e7edf4" stroke-width="1.5"/>
-          <g id="photon" visibility="hidden"><path id="photonPath" fill="none" stroke-width="3" stroke-linecap="round"/><text id="photonLbl" y="-12" text-anchor="middle" font-size="11" font-family="IBM Plex Mono, monospace" fill="#e7edf4"></text></g>
-          <rect x="482" y="120" width="140" height="120" rx="10" fill="#18202b" stroke="#273243"/>
-          <rect x="482" y="170" width="6" height="20" fill="#e7edf4"/>
-          <text x="552" y="112" text-anchor="middle" font-size="13" fill="#98a6b8" font-family="IBM Plex Sans, sans-serif">Spectroscope</text>
-          <rect id="scopeFlash" x="500" y="140" width="110" height="80" rx="6" fill="#000"/>
-          <text x="20" y="345" font-size="11" fill="#98a6b8" font-family="IBM Plex Sans, sans-serif">Simplified Bohr model. Orbits are not literal electron paths or to scale.</text>
+          <circle cx="180" cy="180" r="11" fill="var(--stage-nucleus)"/>
+          <text x="180" y="184" text-anchor="middle" font-size="10" font-family="IBM Plex Mono, monospace" fill="var(--stage-nucleus-ink)" font-weight="600">p+</text>
+          <circle id="electron" cx="0" cy="0" r="7" fill="var(--stage-electron)" stroke="var(--stage-ink)" stroke-width="1.5"/>
+          <g id="photon" visibility="hidden"><path id="photonPath" fill="none" stroke-width="3" stroke-linecap="round"/><text id="photonLbl" y="-12" text-anchor="middle" font-size="11" font-family="IBM Plex Mono, monospace" fill="var(--stage-ink)"></text></g>
+          <rect x="482" y="120" width="140" height="120" rx="10" fill="var(--stage-panel)" stroke="var(--stage-line)"/>
+          <rect x="482" y="170" width="6" height="20" fill="var(--stage-ink)"/>
+          <text x="552" y="112" text-anchor="middle" font-size="13" fill="var(--stage-muted)" font-family="IBM Plex Sans, sans-serif">Spectroscope</text>
+          <rect id="scopeFlash" x="500" y="140" width="110" height="80" rx="6" fill="var(--scope-bg)"/>
+          <text x="20" y="345" font-size="11" fill="var(--stage-muted)" font-family="IBM Plex Sans, sans-serif">Simplified Bohr model. Orbits are not literal electron paths or to scale.</text>
         </svg>
         <div>
           <div class="row" style="justify-content:space-between"><h3>Spectrum you have built</h3>
@@ -437,6 +467,8 @@ function describe(lines){
 }
 const draws=[];
 function spectrum(cv,getLines,getOpts){draws.push(()=>drawSpec(cv,getLines(),getOpts?getOpts():{}));}
+function tokens(){const cs=getComputedStyle(document.documentElement),g=(n,d)=>cs.getPropertyValue(n).trim()||d;
+  return{bg:g('--scope-bg','#000'),dim:g('--scope-dim','0,0,0'),overlay:g('--scope-overlay','rgba(255,255,255,.95)'),axisBg:g('--scope-axis-bg','#0d1117'),axisLine:g('--scope-axis-line','#5b6778'),axisInk:g('--scope-axis-ink','#aab6c5'),label:g('--scope-label','#e7edf4')}}
 function drawSpec(cv,lines,o={}){
   const w=cv.clientWidth; if(!w)return;
   const h=cv.clientHeight, dpr=window.devicePixelRatio||1, min=400,max=700;
@@ -444,28 +476,29 @@ function drawSpec(cv,lines,o={}){
   const c=cv.getContext('2d'); c.setTransform(dpr,0,0,dpr,0,0);
   const axisH=22, top=o.labels?32:0, band=h-axisH-top, pad=18;
   const X=nm=>pad+(nm-min)/(max-min)*(w-2*pad);
-  c.fillStyle='#000'; c.fillRect(0,0,w,h);
+  const T=tokens();
+  c.fillStyle=T.bg; c.fillRect(0,0,w,h);
   const sorted=[...lines].sort((a,b)=>a[0]-b[0]);
   if(o.absorption){
     for(let x=pad;x<w-pad;x++){const nm=min+(x-pad)/(w-2*pad)*(max-min);c.fillStyle=col(nm,.9);c.fillRect(x,top,1,band)}
-    sorted.forEach(([nm,I])=>{c.fillStyle=`rgba(0,0,0,${.55+.45*I})`;c.fillRect(X(nm)-1.5,top,3,band)});
+    sorted.forEach(([nm,I])=>{c.fillStyle=`rgba(${T.dim},${.55+.45*I})`;c.fillRect(X(nm)-1.5,top,3,band)});
   }else{
     c.globalCompositeOperation='lighter';
     sorted.forEach(([nm,I])=>{if(nm<min||nm>max)return;c.shadowColor=col(nm);c.shadowBlur=12*I;c.globalAlpha=Math.max(.28,I);c.fillStyle=col(nm);c.fillRect(X(nm)-1.5,top,3,band)});
     c.globalCompositeOperation='source-over';c.globalAlpha=1;c.shadowBlur=0;
   }
   if(o.overlay&&o.overlay.length){
-    c.strokeStyle='rgba(255,255,255,.95)';c.lineWidth=1;c.setLineDash([4,3]);
+    c.strokeStyle=T.overlay;c.lineWidth=1;c.setLineDash([4,3]);
     o.overlay.forEach(nm=>{const x=X(nm);c.beginPath();c.moveTo(x,top);c.lineTo(x,top+band);c.stroke()});
     c.setLineDash([]);
-    c.fillStyle='rgba(255,255,255,.95)';
+    c.fillStyle=T.overlay;
     o.overlay.forEach(nm=>{const x=X(nm);c.beginPath();c.moveTo(x-4,top+band);c.lineTo(x+4,top+band);c.lineTo(x,top+band-6);c.closePath();c.fill()});
   }
-  c.fillStyle='#0d1117';c.fillRect(0,h-axisH,w,axisH);
-  c.strokeStyle='#5b6778';c.fillStyle='#aab6c5';c.font='11px "IBM Plex Mono", monospace';c.textAlign='center';
+  c.fillStyle=T.axisBg;c.fillRect(0,h-axisH,w,axisH);
+  c.strokeStyle=T.axisLine;c.fillStyle=T.axisInk;c.font='11px "IBM Plex Mono", monospace';c.textAlign='center';
   for(let nm=min;nm<=max;nm+=50){const x=X(nm);c.beginPath();c.moveTo(x,h-axisH);c.lineTo(x,h-axisH+5);c.stroke();c.fillText(String(nm),x,h-axisH+16)}
   if(o.labels){
-    const rows=[-1e9,-1e9,-1e9];c.font='10px "IBM Plex Mono", monospace';c.fillStyle='#e7edf4';
+    const rows=[-1e9,-1e9,-1e9];c.font='10px "IBM Plex Mono", monospace';c.fillStyle=T.label;
     sorted.forEach(([nm])=>{const x=X(nm);const r=rows.findIndex(px=>x-px>36);if(r<0)return;rows[r]=x;c.fillText(nm.toFixed(1),x,10+r*10)});
   }
   cv.setAttribute('role','img');
@@ -474,18 +507,39 @@ function drawSpec(cv,lines,o={}){
 function redrawAll(){draws.forEach(f=>f())}
 let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(redrawAll,120)});
 
+/* ---------- theme (Auto / Light / Dark) ---------- */
+const hostTheme=document.documentElement.getAttribute('data-theme');
+const THEMES=['auto','light','dark'],THEME_LBL={auto:'Auto',light:'Light',dark:'Dark'};
+let themePref='auto';
+try{const v=localStorage.getItem('theme-pref');if(THEMES.includes(v))themePref=v}catch(e){}
+function applyTheme(){
+  const de=document.documentElement;
+  if(themePref==='auto'){if(hostTheme!==null)de.setAttribute('data-theme',hostTheme);else de.removeAttribute('data-theme')}
+  else de.setAttribute('data-theme',themePref);
+  const b=$('#themeBtn'),next=THEMES[(THEMES.indexOf(themePref)+1)%3];
+  if(b){b.textContent='Theme: '+THEME_LBL[themePref];
+    b.setAttribute('aria-label','Color theme: '+THEME_LBL[themePref]+(themePref==='auto'?' (follows system)':'')+'. Activate to switch to '+THEME_LBL[next]+'.')}
+}
+applyTheme();
+$('#themeBtn').addEventListener('click',()=>{
+  themePref=THEMES[(THEMES.indexOf(themePref)+1)%3];
+  try{localStorage.setItem('theme-pref',themePref)}catch(e){}
+  applyTheme();redrawAll();
+});
+if(window.matchMedia){const mq=window.matchMedia('(prefers-color-scheme: light)');const f=()=>{if(themePref==='auto')redrawAll()};if(mq.addEventListener)mq.addEventListener('change',f);else if(mq.addListener)mq.addListener(f)}
+
 /* ---------- tube svg ---------- */
 let tubeN=0;
 function tubeSVG(glow,on,label){
   const id='blur'+(++tubeN);
   return `<svg viewBox="0 0 420 120" role="img" aria-label="${label}"><defs><filter id="${id}" x="-20%" y="-80%" width="140%" height="260%"><feGaussianBlur stdDeviation="7"/></filter></defs>
-  <rect x="0" y="0" width="420" height="120" rx="10" fill="#05070a"/>
+  <rect x="0.5" y="0.5" width="419" height="119" rx="10" fill="var(--stage-bg)" stroke="var(--stage-edge)"/>
   <rect class="tube-glow" x="58" y="44" width="304" height="32" rx="16" fill="${glow}" opacity="${on?.85:0}" filter="url(#${id})"/>
   <rect class="tube-glow" x="64" y="50" width="292" height="20" rx="10" fill="${glow}" opacity="${on?.95:0}"/>
-  <rect x="52" y="40" width="316" height="40" rx="20" fill="none" stroke="#c9d3df" stroke-opacity=".7" stroke-width="2"/>
-  <rect x="28" y="52" width="26" height="16" rx="3" fill="#7d8796"/><rect x="366" y="52" width="26" height="16" rx="3" fill="#7d8796"/>
-  <line x1="28" y1="60" x2="8" y2="60" stroke="#7d8796" stroke-width="3"/><line x1="392" y1="60" x2="412" y2="60" stroke="#7d8796" stroke-width="3"/>
-  <text x="210" y="106" text-anchor="middle" font-size="12" fill="#98a6b8" font-family="IBM Plex Sans, sans-serif">${on?'Power ON: gas glowing':'Power OFF'}</text></svg>`;
+  <rect x="52" y="40" width="316" height="40" rx="20" fill="none" stroke="var(--stage-glass)" stroke-opacity=".7" stroke-width="2"/>
+  <rect x="28" y="52" width="26" height="16" rx="3" fill="var(--stage-metal)"/><rect x="366" y="52" width="26" height="16" rx="3" fill="var(--stage-metal)"/>
+  <line x1="28" y1="60" x2="8" y2="60" stroke="var(--stage-metal)" stroke-width="3"/><line x1="392" y1="60" x2="412" y2="60" stroke="var(--stage-metal)" stroke-width="3"/>
+  <text x="210" y="106" text-anchor="middle" font-size="12" fill="var(--stage-muted)" font-family="IBM Plex Sans, sans-serif">${on?'Power ON: gas glowing':'Power OFF'}</text></svg>`;
 }
 
 /* ---------- progress, tabs, mode ---------- */
@@ -582,7 +636,7 @@ const Q_M1={id:'m1q',prompt:'Why do you observe individual colored lines instead
 /* ---------- MODULE 2 ---------- */
 const CX=180,CY=180,ANG=-Math.PI/3,R=n=>18+n*26;
 const MID=[CX,CY];
-$('#orbits').innerHTML=[1,2,3,4,5,6].map(n=>`<circle cx="${CX}" cy="${CY}" r="${R(n)}" fill="none" stroke="#3a4759" stroke-dasharray="${n===1?'0':'3 4'}"/><text x="${CX-R(n)+4}" y="${CY+4}" font-size="10" fill="#98a6b8" font-family="IBM Plex Mono, monospace">n=${n}</text>`).join('');
+$('#orbits').innerHTML=[1,2,3,4,5,6].map(n=>`<circle cx="${CX}" cy="${CY}" r="${R(n)}" fill="none" stroke="var(--stage-orbit)" stroke-dasharray="${n===1?'0':'3 4'}"/><text x="${CX-R(n)+4}" y="${CY+4}" font-size="10" fill="var(--stage-muted)" font-family="IBM Plex Mono, monospace">n=${n}</text>`).join('');
 const lvlOpts=[1,2,3,4,5,6].map(n=>`<option value="${n}">n = ${n}</option>`).join('');
 $('#fromSel').innerHTML=lvlOpts;$('#toSel').innerHTML=lvlOpts;
 let elecLevel=3;$('#fromSel').value='3';$('#toSel').value='2';
@@ -624,7 +678,7 @@ function transition(type,a,b){
   if(type==='release'&&b>a){m2msg('An electron releases energy only when it moves to a LOWER level. Pick a final level below the initial level, or use "Absorb energy".','no');return}
   if(type==='absorb'&&b<a){m2msg('Absorbing energy moves an electron to a HIGHER level. Pick a final level above the initial level, or use "Release energy".','no');return}
   lastT={type,a,b};elecLevel=a;elecAt(R(a));readout(a,b,type);
-  const r=calc(a,b);const pc=r.vis?col(r.lam):'#b8c2cf';const pl=r.vis?r.lam.toFixed(0)+' nm':(r.lam<400?'UV':'IR')+' · '+r.lam.toFixed(0)+' nm';
+  const r=calc(a,b);const pc=r.vis?col(r.lam):'var(--stage-invisible)';const pl=r.vis?r.lam.toFixed(0)+' nm':(r.lam<400?'UV':'IR')+' · '+r.lam.toFixed(0)+' nm';
   const [ax,ay]=elecPos(R(a)),[bx,by]=elecPos(R(b));
   let phases;
   if(type==='release'){
@@ -632,7 +686,7 @@ function transition(type,a,b){
       {name:`Electron drops from n = ${a} to n = ${b}`,dur:900,fn:p=>elecAt(R(a)+(R(b)-R(a))*ease(p))},
       {name:'A photon is emitted',dur:400,fn:p=>photon(true,bx,by,pc,pl,p)},
       {name:'Photon travels to the spectroscope',dur:1200,fn:p=>photon(true,bx+(485-bx)*p,by+(180-by)*p,pc,pl)},
-      {name:r.vis?'A bright line appears in the spectrum':'No visible line: this photon is '+r.reg,dur:350,fn:p=>{if(p>=1){photon(false);$('#scopeFlash').setAttribute('fill',r.vis?pc:'#000')}}}
+      {name:r.vis?'A bright line appears in the spectrum':'No visible line: this photon is '+r.reg,dur:350,fn:p=>{if(p>=1){photon(false);$('#scopeFlash').setAttribute('fill',r.vis?pc:'var(--scope-bg)')}}}
     ];
   }else{
     phases=[
@@ -917,5 +971,6 @@ function init(){
 init();
 })();
 </script>
+
 </body>
 </html>
